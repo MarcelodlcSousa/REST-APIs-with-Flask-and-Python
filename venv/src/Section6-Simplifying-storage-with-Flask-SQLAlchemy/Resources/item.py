@@ -9,6 +9,11 @@ class Item(Resource):
                         required=True,
                         help="This field cannot be left blank!")
 
+    parser.add_argument('store_id',
+                        type=int,
+                        required=True,
+                        help="Every item needs a store id")
+
     @jwt_required() # Turns on authorization requirement. Put it on top of each desired request to add authorization necessity.
     def get(self, name):
         item = ItemModel.find_by_name(name)
@@ -22,7 +27,7 @@ class Item(Resource):
 
         data = Item.parser.parse_args()
 
-        item = ItemModel(name, data['price'])
+        item = ItemModel(name, **data)
 
         try:
             item.save_to_db()
@@ -32,7 +37,7 @@ class Item(Resource):
         return item.json(), 201
 
     def delete(self, name):
-        item = Item.find_by_name(name)
+        item = ItemModel.find_by_name(name)
         if item:
             item.delete_from_db()
 
@@ -44,7 +49,7 @@ class Item(Resource):
         item = ItemModel.find_by_name(name)
 
         if item is None:
-           item = ItemModel(name, data['price'])
+           item = ItemModel(name, **data)
         else:
             item.price = data['price']
 
